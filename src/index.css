@@ -1,0 +1,99 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Design System - Perfeita Sintonia */
+
+@layer base {
+  :root {
+    --background: 340 25% 98%;
+    --foreground: 340 15% 15%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 340 15% 15%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 340 15% 15%;
+
+    /* Romantic color palette */
+    --primary: 340 75% 55%; /* Coral Pink */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 260 65% 70%; /* Lavender Purple */
+    --secondary-foreground: 0 0% 100%;
+
+    --accent: 210 65% 65%; /* Serenity Blue */
+    --accent-foreground: 0 0% 100%;
+
+    --muted: 340 20% 95%;
+    --muted-foreground: 340 10% 45%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 340 20% 90%;
+    --input: 340 20% 90%;
+    --ring: 340 75% 55%;
+
+    --radius: 0.75rem;
+
+    /* Gradients */
+    --gradient-romantic: linear-gradient(135deg, hsl(340 75% 55%) 0%, hsl(260 65% 70%) 100%);
+    --gradient-soft: linear-gradient(180deg, hsl(340 25% 98%) 0%, hsl(260 15% 96%) 100%);
+  }
+
+  .dark {
+    --background: 340 15% 8%;
+    --foreground: 340 10% 95%;
+
+    --card: 340 15% 10%;
+    --card-foreground: 340 10% 95%;
+
+    --popover: 340 15% 10%;
+    --popover-foreground: 340 10% 95%;
+
+    --primary: 340 75% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 260 65% 70%;
+    --secondary-foreground: 0 0% 100%;
+
+    --accent: 210 65% 65%;
+    --accent-foreground: 0 0% 100%;
+
+    --muted: 340 15% 20%;
+    --muted-foreground: 340 10% 65%;
+
+    --destructive: 0 62.8% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 340 15% 20%;
+    --input: 340 15% 20%;
+    --ring: 340 75% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    background: linear-gradient(135deg, hsl(340 25% 98%) 0%, hsl(260 15% 96%) 100%);
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  .gradient-romantic {
+    background: var(--gradient-romantic);
+  }
+  
+  .text-gradient {
+    background: var(--gradient-romantic);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
