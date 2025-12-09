@@ -1,33 +1,96 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom"; // Importar useSearchParams
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Download, CheckCircle } from "lucide-react";
+import { Download, CheckCircle, Lock } from "lucide-react";
 import { getUserData, updateUserData } from "@/utils/storage";
 import { getProfileDescription } from "@/utils/discCalculator";
 import { toast } from "sonner";
 
 const Report = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams(); // Hook para ler a URL
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const userData = getUserData();
-    if (!userData) {
-      navigate('/register');
-      return;
-    }
-    updateUserData({ hasPremiumReport: true });
-  }, [navigate]);
+    const verifyAccess = async () => {
+      const userData = getUserData();
+      
+      // 1. Se não tiver dados básicos, manda pro registro
+      if (!userData) {
+        navigate('/register');
+        return;
+      }
 
-  const handleDownload = () => {
-    toast.success("Seu relatório está sendo preparado para download!");
-    // In a real implementation, this would generate and download a PDF
-  };
+      // 2. Se o usuário JÁ tem o relatório liberado no local storage
+      if (userData.hasPremiumReport) {
+        setIsUnlocked(true);
+        setIsLoading(false);
+        return;
+      }
+
+      // 3. Se está voltando do Mercado Pago com Aprovação
+      const status = searchParams.get('status'); // Pega o ?status= da URL
+      
+      if (status === 'approved') {
+        try {
+          // Atualiza no Backend (PHP/JSON)
+          await fetch('/api.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'update_payment',
+              email: userData.email
+            })
+          });
+
+          // Atualiza no Navegador (Local Storage)
+          updateUserData({ hasPremiumReport: true });
+          
+          setIsUnlocked(true);
+          toast.success("Pagamento confirmado! Seu relatório foi liberado.");
+        } catch (error) {
+          console.error("Erro ao salvar pagamento", error);
+          // Mesmo com erro no backend, liberamos se o MP disse que está ok
+          updateUserData({ hasPremiumReport: true });
+          setIsUnlocked(true);
+        }
+      } else {
+        // Se não tem permissão e não veio do pagamento aprovado
+        // Redireciona de volta para a oferta Premium
+        toast.error("Você precisa finalizar o pagamento para ver o relatório.");
+        navigate('/premium');
+      }
+      
+      setIsLoading(false);
+    };
+
+    verifyAccess();
+  }, [navigate, searchParams]);
+
+  // Loading state simples
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse text-primary font-bold text-xl">Verificando pagamento...</div>
+      </div>
+    );
+  }
+
+  // Se não estiver desbloqueado (embora o useEffect deva redirecionar), não mostra nada
+  if (!isUnlocked) return null;
 
   const userData = getUserData();
+  // Verificação de segurança extra para os dados
   if (!userData?.userResult || !userData?.partnerResult || !userData?.compatibility) {
     return null;
   }
+
+  const handleDownload = () => {
+    toast.success("Seu relatório está sendo preparado para download!");
+    // Aqui você implementaria a geração real do PDF
+  };
 
   const userProfile = getProfileDescription(userData.userResult.profile);
   const partnerProfile = getProfileDescription(userData.partnerResult.profile);
@@ -39,7 +102,7 @@ const Report = () => {
         <Card className="border-primary/30 bg-primary/5">
           <CardContent className="p-8 text-center">
             <CheckCircle className="w-16 h-16 text-primary mx-auto mb-4" />
-            <h2 className="text-2xl font-bold mb-2">Pagamento Confirmado!</h2>
+            <h2 className="text-2xl font-bold mb-2">Acesso Liberado!</h2>
             <p className="text-muted-foreground">
               Seu Relatório Premium de Compatibilidade está pronto
             </p>
