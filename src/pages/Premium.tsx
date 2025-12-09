@@ -3,22 +3,54 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Download, CreditCard } from "lucide-react";
+import { CheckCircle, CreditCard } from "lucide-react";
 import { toast } from "sonner";
+import { getUserData } from "@/utils/storage"; // Importante: importar para pegar nome/email
 
 const Premium = () => {
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handlePayment = () => {
-    setIsProcessing(true);
+  const handlePayment = async () => {
+    const userData = getUserData();
     
-    // Simulate payment processing
-    setTimeout(() => {
+    if (!userData || !userData.name || !userData.email) {
+      toast.error("Dados do usuário não encontrados. Por favor, refaça o teste.");
+      return;
+    }
+
+    setIsProcessing(true);
+    toast.info("Iniciando pagamento com Mercado Pago...");
+
+    try {
+      // Chama seu arquivo PHP
+      const response = await fetch('/payment.php', { // Caminho relativo para public/payment.php
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: userData.name,
+          email: userData.email,
+          baseUrl: window.location.origin // Envia a URL atual do seu site (localhost ou produção)
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.payment_url) {
+        // Redireciona o usuário para o Mercado Pago
+        window.location.href = data.payment_url;
+      } else {
+        console.error("Erro MP:", data);
+        toast.error("Erro ao gerar link de pagamento. Tente novamente.");
+        setIsProcessing(false);
+      }
+    } catch (error) {
+      console.error("Erro de conexão:", error);
+      toast.error("Erro de conexão com o servidor.");
       setIsProcessing(false);
-      toast.success("Pagamento realizado com sucesso!");
-      navigate('/report');
-    }, 2000);
+    }
   };
 
   return (
@@ -107,11 +139,11 @@ const Premium = () => {
               disabled={isProcessing}
             >
               <CreditCard className="mr-2 w-5 h-5" />
-              {isProcessing ? "Processando..." : "Comprar Agora via Mercado Pago"}
+              {isProcessing ? "Redirecionando..." : "Comprar Agora via Mercado Pago"}
             </Button>
 
             <p className="text-center text-sm text-muted-foreground mt-4">
-              Pagamento 100% seguro via Mercado Pago
+              Ambiente Seguro Mercado Pago (Modo Teste)
             </p>
           </CardContent>
         </Card>
