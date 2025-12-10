@@ -23,7 +23,7 @@ $preference_data = [
             "title" => "Relatório Completo de Compatibilidade - Perfeita Sintonia",
             "quantity" => 1,
             "currency_id" => "BRL",
-            "unit_price" => 49.90
+            "unit_price" => 0.10
         ]
     ],
     "payer" => [
@@ -32,8 +32,8 @@ $preference_data = [
     ],
     "back_urls" => [
         "success" => $baseUrl . "/report",
-        "failure" => $baseUrl . "/premium",
-        "pending" => $baseUrl . "/premium"
+        "failure" => $baseUrl . "/premium", // Só volta pro Premium se FALHAR (cartão recusado)
+        "pending" => $baseUrl . "/report"   // Se estiver PENDENTE, vai pro relatório tentar liberar
     ],
     "auto_return" => "approved",
     "statement_descriptor" => "PERFEITA SINTONIA", // Nome na fatura do cartão
@@ -68,12 +68,9 @@ if ($err) {
 } else {
     $json_response = json_decode($response, true);
     
-    // VERIFICAÇÃO FINAL:
-    // Em produção, o link correto está em 'init_point'
     if (isset($json_response['init_point'])) {
         echo json_encode(['payment_url' => $json_response['init_point']]);
     } else {
-        // Se der erro, mostra a resposta do Mercado Pago para debug
         echo $response;
     }
 }
