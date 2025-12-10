@@ -26,6 +26,7 @@ export interface CompatibilityResult {
 
 export interface UserData {
   name: string;
+  partnerName?: string; // <--- CAMPO ADICIONADO
   email: string;
   phone?: string;
   userResult?: QuizResult;

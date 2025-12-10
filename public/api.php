@@ -20,6 +20,7 @@ if ($method === 'POST' && !isset($data['action'])) {
     $newUser = [
         'id' => uniqid(),
         'name' => $data['name'],
+        'partnerName' => $data['partnerName'] ?? '', // <--- CAMPO ADICIONADO
         'email' => $data['email'],
         'phone' => $data['phone'],
         'status' => 'pending', // pending, paid

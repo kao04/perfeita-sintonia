@@ -12,6 +12,7 @@ const Result = () => {
   const navigate = useNavigate();
   const [compatibility, setCompatibility] = useState<CompatibilityResult | null>(null);
   const [userName, setUserName] = useState("");
+  const [partnerName, setPartnerName] = useState(""); // <--- ESTADO NOVO
 
   useEffect(() => {
     const userData = getUserData();
@@ -22,6 +23,9 @@ const Result = () => {
     }
 
     setUserName(userData.name);
+    // Pega o nome do parceiro ou usa um padrão se não existir
+    setPartnerName(userData.partnerName || "Parceiro(a)"); // <--- ATRIBUIÇÃO AQUI
+
     const result = calculateCompatibility(
       userData.userResult.profile,
       userData.partnerResult.profile
@@ -62,7 +66,7 @@ const Result = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <span>Seu Perfil</span>
+                <span>Perfil de {userName}</span> {/* Nome do Usuário */}
                 <Badge className="bg-primary">{compatibility.userProfile}</Badge>
               </CardTitle>
             </CardHeader>
@@ -80,7 +84,8 @@ const Result = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <span>Perfil do(a) Parceiro(a)</span>
+                {/* AQUI ESTÁ A MUDANÇA VISUAL PRINCIPAL */}
+                <span>Perfil de {partnerName}</span> 
                 <Badge className="bg-secondary">{compatibility.partnerProfile}</Badge>
               </CardTitle>
             </CardHeader>

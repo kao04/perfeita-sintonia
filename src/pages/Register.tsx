@@ -8,7 +8,7 @@ import { Heart, Loader2 } from "lucide-react";
 import { saveUserData } from "@/utils/storage";
 import { toast } from "sonner";
 
-// URL do seu site na Hostinger (onde o arquivo api.php vai estar)
+// URL do seu site na Hostinger
 const API_BASE_URL = 'https://perfeitasintonia.com.br';
 
 const Register = () => {
@@ -16,6 +16,7 @@ const Register = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
+    partnerName: "", // <--- NOVO CAMPO
     email: "",
     phone: ""
   });
@@ -23,8 +24,9 @@ const Register = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.email) {
-      toast.error("Por favor, preencha nome e e-mail");
+    // Validação inclui o nome do parceiro agora
+    if (!formData.name || !formData.partnerName || !formData.email) {
+      toast.error("Por favor, preencha os nomes e o e-mail");
       return;
     }
 
@@ -39,6 +41,7 @@ const Register = () => {
         },
         body: JSON.stringify({
           name: formData.name,
+          partnerName: formData.partnerName, // <--- ENVIANDO PARA API
           email: formData.email,
           phone: formData.phone
         }),
@@ -50,9 +53,10 @@ const Register = () => {
         throw new Error(data.message || 'Erro ao salvar no banco de dados');
       }
 
-      // 2. Salva no LocalStorage (Necessário para o Quiz continuar funcionando)
+      // 2. Salva no LocalStorage (Para o Relatório e Quiz funcionarem)
       saveUserData({
         name: formData.name,
+        partnerName: formData.partnerName, // <--- SALVANDO LOCALMENTE
         email: formData.email,
         phone: formData.phone
       });
@@ -64,7 +68,15 @@ const Register = () => {
 
     } catch (error) {
       console.error("Erro no cadastro:", error);
-      toast.error("Erro ao conectar com o servidor. Tente novamente.");
+      // Mesmo se der erro na API, tentamos salvar local para o usuário não travar
+      saveUserData({
+        name: formData.name,
+        partnerName: formData.partnerName,
+        email: formData.email,
+        phone: formData.phone
+      });
+      navigate('/quiz/user');
+      
     } finally {
       setIsLoading(false);
     }
@@ -77,16 +89,18 @@ const Register = () => {
           <Heart className="w-12 h-12 text-primary mx-auto mb-4 animate-float" fill="currentColor" />
           <CardTitle className="text-3xl">Bem-vindo!</CardTitle>
           <CardDescription className="text-base">
-            Vamos começar conhecendo você. Seus dados são seguros conosco.
+            Vamos começar conhecendo vocês.
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            
+            {/* Seu Nome */}
             <div>
-              <Label htmlFor="name">Nome Completo *</Label>
+              <Label htmlFor="name">Seu Nome Completo *</Label>
               <Input
                 id="name"
-                placeholder="Seu nome"
+                placeholder="Ex: João Silva"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
@@ -94,6 +108,20 @@ const Register = () => {
               />
             </div>
 
+            {/* Nome do Parceiro(a) - NOVO CAMPO */}
+            <div>
+              <Label htmlFor="partnerName">Nome do(a) Parceiro(a) *</Label>
+              <Input
+                id="partnerName"
+                placeholder="Ex: Maria Oliveira"
+                value={formData.partnerName}
+                onChange={(e) => setFormData({ ...formData, partnerName: e.target.value })}
+                required
+                disabled={isLoading}
+              />
+            </div>
+
+            {/* Email */}
             <div>
               <Label htmlFor="email">E-mail *</Label>
               <Input
@@ -107,6 +135,7 @@ const Register = () => {
               />
             </div>
 
+            {/* Telefone */}
             <div>
               <Label htmlFor="phone">Telefone (opcional)</Label>
               <Input
